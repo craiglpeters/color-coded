@@ -1,0 +1,48 @@
+version: '1.0'
+steps:
+  go-build:
+    image:  r.cfcr.io/craiglpeters/craiglpeters/jfrogcligotoolsdocker:latest #Replace with your jfrogcli docker image.
+    fail_fast: false
+    commands:
+        # Setup jfrog config with URL and credentials
+      - jfrog rt config '${{RT-ID}}' --url '${{RT-URL}}' --user '${{RT-USER}}' --apikey '${{RT-APIKEY}}' --interactive=false
+      
+      # Use the jfrog cli go integration to build the go project
+      - jfrog rt go build go
+      
+      # Set MODS_EXIST if Artifactory was able to resolve all the package dependencies
+      - cf_export MODS_EXIST=true
+  go-build-from-source-and-publish:
+    # when clause ensures that this step executes only if Artifactory did not have the dependencies
+    image:  r.cfcr.io/craiglpeters/craiglpeters/jfrogcligotoolsdocker:latest #Replace with your jfrogcli docker image.
+    commands:
+      - jfrog rt config '${{RT-ID}}' --url '${{RT-URL}}' --user '${{RT-USER}}' --apikey '${{RT-APIKEY}}' --interactive=false
+      # Fetch the dependencies from source
+      - jfrog rt go build --no-registry
+      
+      # Publish the new dependencies to Artifactory
+      - jfrog rt go-publish go --self=false --deps=ALL
+    when:
+      condition:
+        all:
+          mods: '${{MODS_EXIST}} != true'
+  go-binary-and-build-info-publish:
+    image:  r.cfcr.io/craiglpeters/craiglpeters/jfrogcligotoolsdocker:latest #Replace with your jfrogcli docker image.
+    commands:
+      - jfrog rt config '${{RT-ID}}' --url '${{RT-URL}}' --user '${{RT-USER}}' --apikey '${{RT-APIKEY}}' --interactive=false
+      
+      # Build the project capturing all the dependency resolutions
+      - jfrog rt go build go --build-name='${{CF_REPO_NAME}}' --build-number='${{CF_SHORT_REVISION}}'
+      
+      # Capture all the current environment variables and publish them to Artifactory BuildInfo
+      - jfrog rt build-collect-env '${{CF_REPO_NAME}}' '${{CF_SHORT_REVISION}}'
+      
+      # Publish all the data to Artifactory BuildInfo
+      - jfrog rt go-publish go v1.0.0 --build-name='${{CF_REPO_NAME}}' --build-number='${{CF_SHORT_REVISION}}'
+      - jfrog rt build-publish '${{CF_REPO_NAME}}' '${{CF_SHORT_REVISION}}'
+      
+      # Take a snapshot of all the built go binaries
+      - curl -sL https://git.io/goreleaser | bash -s -- --snapshot
+      
+      # Upload the binaries to a generic repository in Artifactory
+      - jfrog rt upload "dist/*.tar.gz" binary-releases-local --build-name='${{CF_REPO_NAME}}' --build-number='${{CF_SHORT_REVISION}}'
