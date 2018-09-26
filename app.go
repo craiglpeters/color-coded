@@ -1,6 +1,5 @@
 package main
 
-// worthless comment
 
 import (
 	"fmt"
