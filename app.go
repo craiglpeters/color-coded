@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"rsc.io/quote"
+	"github.com/fogleman/nes"
 )
 
 func main() {
