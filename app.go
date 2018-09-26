@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"rsc.io/quote"
-	"github.com/fogleman/nes"
+	"https://github.com/sanbornm/go-selfupdate"
 )
 
 func main() {
