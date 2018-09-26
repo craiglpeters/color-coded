@@ -10,6 +10,7 @@ import (
 	"rsc.io/quote"
 )
 
+// no need to say what main is about
 func main() {
 	c := os.Getenv("COLOR")
 //	r := rq.Get("https://httpbin.org/get")
