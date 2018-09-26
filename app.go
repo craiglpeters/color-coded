@@ -1,5 +1,7 @@
 package main
 
+// worthless comment
+
 import (
 	"fmt"
 	"net/http"
