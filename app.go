@@ -6,15 +6,14 @@ import (
 	"net/http"
 	"os"
 
-//	"github.com/ddo/rq"
+	"github.com/ddo/rq"
 	"rsc.io/quote"
 )
 
-// no need to say what main is about
 func main() {
 	c := os.Getenv("COLOR")
-//	r := rq.Get("https://httpbin.org/get")
-//	r.Qs("q", "1", "2")
+	r := rq.Get("https://httpbin.org/get")
+	r.Qs("q", "1", "2")
 	q := quote.Hello()
 	if len(c) == 0 {
 		os.Setenv("COLOR", "#F1A94E") //Blue 44B3C2 and Yellow F1A94E.
