@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-//	c := os.Getenv("COLOR")
-	q := quote.Hello()
+	c := os.Getenv("COLOR")
+//	q := quote.Hello()
 	if len(c) == 0 {
 		os.Setenv("COLOR", "#F1A94E") //Blue 44B3C2 and Yellow F1A94E.
 	}
